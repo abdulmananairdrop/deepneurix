@@ -1,0 +1,56 @@
+{
+  "kind": "singleType",
+  "collectionName": "footers",
+  "info": {
+    "singularName": "footer",
+    "pluralName": "footers",
+    "displayName": "Footer",
+    "description": "Footer section"
+  },
+  "options": {
+    "draftAndPublish": true,
+    "preview": {
+      "enabled": true,
+      "config": {
+        "url": "http://localhost:3000"
+      }
+    }
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "siteLogo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "siteLogoLight": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"],
+      "description": "Light version of logo for dark backgrounds"
+    },
+    "siteName": {
+      "type": "string"
+    },
+    "companyDescription": {
+      "type": "text"
+    },
+    "socialLinks": {
+      "type": "json"
+    },
+    "contactEmail": {
+      "type": "email"
+    },
+    "contactPhone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "text"
+    },
+    "copyrightText": {
+      "type": "string"
+    }
+  }
+}

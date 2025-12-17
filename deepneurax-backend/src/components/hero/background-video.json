@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_hero_background_videos",
+  "info": {
+    "displayName": "Background Video",
+    "description": "Video for hero background with optional thumbnail"
+  },
+  "options": {},
+  "attributes": {
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["videos"]
+    },
+    "videoUrl": {
+      "type": "string",
+      "description": "Direct video URL (YouTube, Vimeo, or any video URL) as alternative to uploaded video"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "duration": {
+      "type": "integer",
+      "default": 10,
+      "description": "How long to show this video (in seconds) before moving to next"
+    }
+  }
+}

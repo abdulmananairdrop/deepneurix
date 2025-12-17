@@ -1,0 +1,28 @@
+{
+  "kind": "singleType",
+  "collectionName": "why_choose_us",
+  "info": {
+    "singularName": "why-choose-us",
+    "pluralName": "why-choose-uses",
+    "displayName": "Why Choose Us"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sectionTitle": {
+      "type": "string",
+      "required": true,
+      "default": "Why Choose Us"
+    },
+    "sectionDescription": {
+      "type": "richtext"
+    },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "why-choose-us.item"
+    }
+  }
+}
