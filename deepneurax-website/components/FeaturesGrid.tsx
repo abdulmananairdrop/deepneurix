@@ -37,7 +37,7 @@ const getFeatureIcon = (title: string, icon?: string) => {
   return CircuitBoard
 }
 
-export default function FeaturesGrid({ features }: { features: Feature[] }) {
+export default function FeaturesGrid({ features, featuresSection }: { features: Feature[], featuresSection?: { sectionTitle?: string, sectionDescription?: string } }) {
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -62,15 +62,18 @@ export default function FeaturesGrid({ features }: { features: Feature[] }) {
     return () => ctx.revert()
   }, [])
 
+  const title = featuresSection?.sectionTitle || "Our Key Features";
+  const description = featuresSection?.sectionDescription || "We deliver exceptional results through innovation, expertise, and dedication.";
+
   return (
     <section ref={sectionRef} id="features" className="py-20 bg-white">
       <div className="container mx-auto px-6">
         <div className="features-header text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Why Choose Us
+            {title}
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            We deliver exceptional results through innovation, expertise, and dedication
+            {description}
           </p>
         </div>
 

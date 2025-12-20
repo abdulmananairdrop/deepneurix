@@ -430,6 +430,47 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAboutUsAboutUs extends Struct.SingleTypeSchema {
+  collectionName: 'about_us_sections';
+  info: {
+    description: 'Section containing Who We Are, Core Values, and Metrics';
+    displayName: 'About Us Section';
+    pluralName: 'about-us-sections';
+    singularName: 'about-us';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    coreValues: Schema.Attribute.Component<'about-us.core-value', true> &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 4;
+          min: 4;
+        },
+        number
+      >;
+    coreValuesHeading: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Our Core Values'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::about-us.about-us'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    whoWeAreDescription: Schema.Attribute.Text;
+    whoWeAreHeading: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Who We Are'>;
+  };
+}
+
 export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
   collectionName: 'blog_posts';
   info: {
@@ -465,6 +506,40 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
     tags: Schema.Attribute.JSON;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiCaseStudiesSectionCaseStudiesSection
+  extends Struct.SingleTypeSchema {
+  collectionName: 'case_studies_sections';
+  info: {
+    description: 'Metadata for the case studies section';
+    displayName: 'Case Studies Section';
+    pluralName: 'case-studies-sections';
+    singularName: 'case-studies-section';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.DefaultTo<'Discover how we help our clients transform their businesses with cutting-edge AI solutions and strategic innovation.'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::case-studies-section.case-studies-section'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Case Studies'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -567,6 +642,44 @@ export interface ApiFeatureFeature extends Struct.CollectionTypeSchema {
     textColor: Schema.Attribute.String;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     titleColor: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiFeaturesSectionFeaturesSection
+  extends Struct.SingleTypeSchema {
+  collectionName: 'features_sections';
+  info: {
+    description: 'Configuration for the scroll morph animation section';
+    displayName: 'Intro Animation Section';
+    pluralName: 'features-sections';
+    singularName: 'features-section';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    images: Schema.Attribute.Media<'images', true>;
+    introHeading: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'The future is built on AI.'>;
+    introSubheading: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'SCROLL TO EXPLORE'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::features-section.features-section'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sectionDescription: Schema.Attribute.Text &
+      Schema.Attribute.DefaultTo<'Discover a world where technology meets creativity. Scroll through our curated collection of innovations designed to shape the future.'>;
+    sectionTitle: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Explore Our Vision'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -784,6 +897,40 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiSphereShowcaseSphereShowcase
+  extends Struct.SingleTypeSchema {
+  collectionName: 'sphere_showcases';
+  info: {
+    description: 'Configuration for the interactive 3D sphere';
+    displayName: 'Sphere Showcase';
+    pluralName: 'sphere-showcases';
+    singularName: 'sphere-showcase';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    items: Schema.Attribute.Component<'sphere-showcase.item', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sphere-showcase.sphere-showcase'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sectionDescription: Schema.Attribute.RichText;
+    sectionTitle: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Explore Our Features'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
   collectionName: 'testimonials';
   info: {
@@ -811,38 +958,6 @@ export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     role: Schema.Attribute.String;
     text: Schema.Attribute.RichText & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiWhyChooseUsWhyChooseUs extends Struct.SingleTypeSchema {
-  collectionName: 'why_choose_us';
-  info: {
-    displayName: 'Why Choose Us';
-    pluralName: 'why-choose-uses';
-    singularName: 'why-choose-us';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    items: Schema.Attribute.Component<'why-choose-us.item', true>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::why-choose-us.why-choose-us'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sectionDescription: Schema.Attribute.RichText;
-    sectionTitle: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'Why Choose Us'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1359,17 +1474,20 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::about-us.about-us': ApiAboutUsAboutUs;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
+      'api::case-studies-section.case-studies-section': ApiCaseStudiesSectionCaseStudiesSection;
       'api::case-study.case-study': ApiCaseStudyCaseStudy;
       'api::cta.cta': ApiCtaCta;
       'api::feature.feature': ApiFeatureFeature;
+      'api::features-section.features-section': ApiFeaturesSectionFeaturesSection;
       'api::footer.footer': ApiFooterFooter;
       'api::hero.hero': ApiHeroHero;
       'api::metric.metric': ApiMetricMetric;
       'api::product.product': ApiProductProduct;
       'api::service.service': ApiServiceService;
+      'api::sphere-showcase.sphere-showcase': ApiSphereShowcaseSphereShowcase;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
-      'api::why-choose-us.why-choose-us': ApiWhyChooseUsWhyChooseUs;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

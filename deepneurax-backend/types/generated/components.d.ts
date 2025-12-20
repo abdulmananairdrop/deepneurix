@@ -1,5 +1,18 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
+export interface AboutUsCoreValue extends Struct.ComponentSchema {
+  collectionName: 'components_metrics_section_core_values';
+  info: {
+    description: 'A single core value for the Metrics Section';
+    displayName: 'Core Value';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    icon: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface HeroBackgroundVideo extends Struct.ComponentSchema {
   collectionName: 'components_hero_background_videos';
   info: {
@@ -14,8 +27,8 @@ export interface HeroBackgroundVideo extends Struct.ComponentSchema {
   };
 }
 
-export interface WhyChooseUsItem extends Struct.ComponentSchema {
-  collectionName: 'components_why_choose_us_items';
+export interface SphereShowcaseItem extends Struct.ComponentSchema {
+  collectionName: 'components_sphere_showcase_items';
   info: {
     description: '';
     displayName: 'Item';
@@ -32,8 +45,9 @@ export interface WhyChooseUsItem extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
+      'about-us.core-value': AboutUsCoreValue;
       'hero.background-video': HeroBackgroundVideo;
-      'why-choose-us.item': WhyChooseUsItem;
+      'sphere-showcase.item': SphereShowcaseItem;
     }
   }
 }

@@ -112,19 +112,73 @@ export default function ProductCarousel({ products }: { products: Product[] }) {
   }
 
   return (
-    <section ref={sectionRef} id="products" className="py-32 bg-gradient-to-b from-gray-50 to-blue-50 overflow-hidden">
-      <div className="container mx-auto px-6">
-        <div className="products-header text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+    <section 
+      ref={sectionRef} 
+      id="products" 
+      className="py-32 relative overflow-hidden bg-[#0b1d4f]"
+    >
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Base Gradient aligned with Metrics section */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1d4ed8] via-[#0b1d4f] to-[#050b1f]"></div>
+        
+        {/* Noise Texture Overlay for consistency */}
+        <div 
+          className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none"
+          style={{ 
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` 
+          }}
+        ></div>
+        
+        {/* Animated Rings for Depth */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] border border-blue-500/10 rounded-full animate-[spin_60s_linear_infinite]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-indigo-500/10 rounded-full animate-[spin_45s_linear_infinite_reverse]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-blue-400/10 rounded-full animate-[spin_30s_linear_infinite]"></div>
+
+        {/* Floating Particles/Dots */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{ 
+            backgroundImage: `radial-gradient(circle, #3b82f6 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }}
+        ></div>
+
+        {/* Decorative Blur Blobs */}
+        <motion.div
+          className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px]"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{ duration: 12, repeat: Infinity }}
+        />
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="products-header text-center mb-24">
+          <h2 
+            className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight"
+            style={{ fontFamily: "'Geom', sans-serif", fontWeight: 900 }}
+          >
             Featured Products
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Innovative solutions designed to accelerate your digital transformation
+          <div className="w-24 h-1.5 bg-blue-500 mx-auto rounded-full mb-8"></div>
+          <p className="text-blue-100/70 text-lg max-w-2xl mx-auto leading-relaxed">
+            Innovative AI-driven solutions designed to accelerate your digital transformation and operational excellence.
           </p>
         </div>
 
         {/* 3D Horizontal Carousel */}
-        <div className="products-carousel relative h-[650px] flex items-center justify-center" style={{ perspective: '2000px' }}>
+        <div className="products-carousel relative h-[600px] flex items-center justify-center" style={{ perspective: '2000px' }}>
           <div className="relative w-full h-full flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
             {products.map((product, index) => {
               const position = getPosition(index)
@@ -145,89 +199,92 @@ export default function ProductCarousel({ products }: { products: Product[] }) {
                     rotateY: position.rotateY,
                   }}
                   transition={{
-                    duration: 0.7,
-                    ease: [0.32, 0.72, 0, 1],
+                    duration: 0.8,
+                    ease: [0.23, 1, 0.32, 1],
                   }}
                 >
                   <div
-                    className={`relative p-8 rounded-3xl border-2 backdrop-blur-sm transition-all duration-500 ${
-                      isActive ? 'shadow-2xl border-blue-500' : 'shadow-lg'
+                    className={`relative p-8 rounded-[32px] border-2 transition-all duration-500 group ${
+                      isActive 
+                        ? 'shadow-[0_20px_50px_-12px_rgba(59,130,246,0.5)] border-blue-500/50' 
+                        : 'shadow-none border-white/5'
                     }`}
                     style={{
-                      width: '400px',
-                      minHeight: '500px',
-                      backgroundColor: product.cardBackgroundColor || 'rgba(255, 255, 255, 0.98)',
-                      borderColor: product.borderColor || (isActive ? '#3b82f6' : '#e5e7eb'),
+                      width: '420px',
+                      minHeight: '520px',
+                      background: isActive 
+                        ? 'rgba(255, 255, 255, 0.05)' 
+                        : 'rgba(255, 255, 255, 0.02)',
+                      backdropFilter: 'blur(20px)',
                       pointerEvents: isActive ? 'auto' : 'none',
                     }}
                   >
+                    {/* Glass Overlay for Active */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-[32px] pointer-events-none opacity-50"></div>
+                    )}
+
                     {/* Product Image or Icon */}
-                    <div className="mb-6">
+                    <div className="mb-8 relative z-10">
                       {product.image?.asset?.url ? (
-                        <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
+                        <div className="relative w-full h-52 rounded-2xl overflow-hidden ring-1 ring-white/10 group-hover:ring-white/20 transition-all">
                           <Image
                             src={product.image.asset.url}
                             alt={product.name}
                             fill
-                            sizes="400px"
-                            className={`object-cover transition-transform duration-500 ${isActive ? 'scale-105' : 'scale-100'}`}
+                            sizes="420px"
+                            className={`object-cover transition-transform duration-700 ${isActive ? 'scale-105 group-hover:scale-110' : 'scale-100'}`}
                             priority={isActive}
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         </div>
                       ) : (
-                        <motion.div 
-                          className="flex items-center justify-center h-56"
-                          animate={isActive ? {
-                            rotate: [0, 10, -10, 0],
-                            scale: [1, 1.1, 1.1, 1],
-                          } : {}}
-                          transition={{
-                            duration: 4,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        >
-                          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
-                            {React.createElement(getProductIcon(product.name, product.icon), {
-                              size: 64,
-                              className: "text-white",
-                              strokeWidth: 1.5
-                            })}
-                          </div>
-                        </motion.div>
+                        <div className="flex items-center justify-center h-52 bg-white/5 rounded-2xl border border-white/10">
+                           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                              {React.createElement(getProductIcon(product.name, product.icon), {
+                                size: 40,
+                                className: "text-white",
+                                strokeWidth: 1.5
+                              })}
+                           </div>
+                        </div>
                       )}
                     </div>
 
                     {/* Product Name */}
                     <h3
-                      className={`text-2xl font-bold mb-4 text-center transition-all duration-300 ${
-                        isActive ? 'text-3xl' : ''
+                      className={`text-2xl font-black mb-4 text-center transition-all duration-300 relative z-10 ${
+                        isActive ? 'text-3xl text-white' : 'text-white/40'
                       }`}
-                      style={{ color: product.titleColor || '#111827' }}
+                      style={{ fontFamily: "'Geom', sans-serif" }}
                     >
                       {product.name}
                     </h3>
 
                     {/* Product Description */}
                     <p
-                      className="text-center leading-relaxed mb-6 line-clamp-3"
-                      style={{ color: product.textColor || '#6b7280' }}
+                      className={`text-center leading-relaxed mb-8 line-clamp-3 relative z-10 transition-colors ${
+                        isActive ? 'text-blue-100/80' : 'text-white/20'
+                      }`}
                     >
                       {product.description}
                     </p>
 
                     {/* Explore Link */}
                     {product.link && isActive && (
-                      <Link href={product.link} className="btn-primary flex items-center justify-center gap-2">
+                      <Link 
+                        href={product.link} 
+                        className="relative z-10 flex items-center justify-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                      >
                         Explore Product
                         <ArrowRight className="w-5 h-5" />
                       </Link>
                     )}
 
-                    {/* Active Indicator */}
+                    {/* Active Indicator Badge */}
                     {isActive && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-blue-600 text-white text-sm font-bold rounded-full">
-                        Featured
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-5 py-1.5 bg-blue-500 text-white text-[10px] uppercase tracking-[0.2em] font-black rounded-full shadow-lg shadow-blue-500/30 border border-blue-400">
+                        Top Rated
                       </div>
                     )}
                   </div>
@@ -238,43 +295,35 @@ export default function ProductCarousel({ products }: { products: Product[] }) {
         </div>
 
         {/* Navigation Controls */}
-        <div className="products-nav flex justify-center items-center gap-6 mt-16">
-          {/* Previous Button */}
+        <div className="products-nav flex justify-center items-center gap-8 mt-20 relative z-10">
           <button
             onClick={() => setActiveIndex((prev) => (prev - 1 + products.length) % products.length)}
-            className="p-4 rounded-full bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl group"
+            className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all group"
             aria-label="Previous product"
           >
-            <svg className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ArrowRight className="w-6 h-6 text-white/60 rotate-180 group-hover:text-blue-400" />
           </button>
 
-          {/* Dots */}
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             {products.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setActiveIndex(index)}
-                className={`transition-all duration-300 rounded-full ${
+                className={`transition-all duration-500 rounded-full ${
                   index === activeIndex
-                    ? 'w-12 h-3 bg-blue-600'
-                    : 'w-3 h-3 bg-gray-300 hover:bg-gray-400'
+                    ? 'w-10 h-2.5 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]'
+                    : 'w-2.5 h-2.5 bg-white/20 hover:bg-white/40'
                 }`}
-                aria-label={`Go to product ${index + 1}`}
               />
             ))}
           </div>
 
-          {/* Next Button */}
           <button
             onClick={() => setActiveIndex((prev) => (prev + 1) % products.length)}
-            className="p-4 rounded-full bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl group"
+            className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all group"
             aria-label="Next product"
           >
-            <svg className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <ArrowRight className="w-6 h-6 text-white/60 group-hover:text-blue-400" />
           </button>
         </div>
       </div>

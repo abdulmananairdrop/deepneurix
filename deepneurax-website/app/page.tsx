@@ -1,15 +1,16 @@
-import { fetchAPI, getStrapiMedia } from '@/lib/strapi/client'
-import Header from '@/components/Header'
-import HeroSection from '@/components/HeroSection'
-import MetricsCounter from '@/components/MetricsCounter'
-import ServicesGrid from '@/components/ServicesGrid'
-import ProductCarousel from '@/components/ProductCarousel'
-import WhyChooseUsSection from '@/components/WhyChooseUsSection'
-import CaseStudiesScroll from '@/components/CaseStudiesScroll'
-import { TestimonialsSection } from '@/components/blocks/testimonials-with-marquee'
-import BlogGrid from '@/components/BlogGrid'
-import CtaSection from '@/components/CtaSection'
-import Footer from '@/components/Footer'
+import ImageSphereSection from './ImageSphereSection';
+import { fetchAPI, getStrapiMedia } from '@/lib/strapi/client';
+import BlogGrid from '@/components/BlogGrid';
+import CaseStudiesScroll from '@/components/CaseStudiesScroll';
+import CoreServicesSection from '@/components/CoreServicesSection';
+import CtaSection from '@/components/CtaSection';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
+import HeroSection from '@/components/HeroSection';
+import MetricsCounter from '@/components/MetricsCounter';
+import ProductCarousel from '@/components/ProductCarousel';
+import ScrollMorphHero from '@/components/ui/scroll-morph-hero';
+import { TestimonialsSection } from '@/components/blocks/testimonials-with-marquee';
 
 const transformMedia = (media: any) => {
   const dataNode = Array.isArray(media?.data) ? media.data[0] : media?.data ?? media
@@ -34,9 +35,11 @@ async function getPageData() {
       heroData,
       servicesData,
       productsData,
-      featuresData,
-      whyChooseUsData,
+      sphereShowcaseData,
       metricsData,
+      aboutUsData,
+      featuresSectionData,
+      caseStudiesSectionData,
       caseStudiesData,
       testimonialsData,
       blogPostsData,
@@ -46,10 +49,15 @@ async function getPageData() {
       fetchAPI('/hero', { populate: '*' }, { revalidate: 120 }).catch(() => ({ data: null })),
       fetchAPI('/services', { populate: '*', sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
       fetchAPI('/products', { populate: '*', sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
-      fetchAPI('/features', { populate: '*', sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
-      fetchAPI('/why-choose-us', { populate: { items: { populate: '*' } } }, { revalidate: 120 }).catch(() => ({ data: null })),
+      fetchAPI('/sphere-showcase', { populate: { items: { populate: 'image' } } }, { revalidate: 120 }).catch(() => ({ data: null })),
       fetchAPI('/metrics', { populate: '*', sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
-      fetchAPI('/case-studies', { populate: { backgroundImage: { populate: '*' } }, sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
+      fetchAPI('/about-us', { populate: { coreValues: '*' } }, { revalidate: 120 }).catch(() => ({ data: null })),
+      fetchAPI('/features-section', { populate: ['images'] }, { revalidate: 120 }).catch((err) => {
+        console.error('Failed to fetch features-section:', err);
+        return { data: null };
+      }),
+      fetchAPI('/case-studies-section', { populate: '*' }, { revalidate: 120 }).catch(() => ({ data: null })),
+      fetchAPI('/case-studies', { populate: '*', sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
       fetchAPI('/testimonials', { populate: '*', sort: 'order:asc' }, { revalidate: 120 }).catch(() => ({ data: [] })),
       fetchAPI('/blog-posts', { populate: '*', sort: 'publishedAt:desc', pagination: { limit: 6 } }, { revalidate: 120 }).catch(() => ({ data: [] })),
       fetchAPI('/cta', { populate: '*' }, { revalidate: 120 }).catch(() => ({ data: null })),
@@ -84,24 +92,20 @@ async function getPageData() {
       image: transformMedia(product.image),
     }))
 
-    const features = normalizeCollection<any>(featuresData?.data).map(feature => ({
-      ...feature,
-      image: transformMedia(feature.image),
-    }))
-
-    const whyChooseUsEntity = normalizeEntity<any>(whyChooseUsData?.data)
-    const whyChooseUs = whyChooseUsEntity
+    const sphereShowcaseEntity = normalizeEntity<any>(sphereShowcaseData?.data)
+    const sphereShowcase = sphereShowcaseEntity
       ? {
-          sectionTitle: whyChooseUsEntity.sectionTitle || 'Why Choose Us',
+          sectionTitle: sphereShowcaseEntity.sectionTitle || 'Explore Our Features',
           sectionDescription:
-            whyChooseUsEntity.sectionDescription ||
+            sphereShowcaseEntity.sectionDescription ||
             'We deliver exceptional results through innovation, expertise, and dedication',
-          items: (whyChooseUsEntity.items ?? [])
+          items: (sphereShowcaseEntity.items ?? [])
             .map((item: any) => {
               const node = item?.attributes ?? item
               const image = transformMedia(node.image)
               return {
-                image: image?.asset?.url || 'https://picsum.photos/900/900?grayscale',
+                id: item.id,
+                image: image?.asset?.url,
                 link: node.link || '#',
                 title: node.title,
                 description: node.description,
@@ -117,6 +121,7 @@ async function getPageData() {
     const caseStudies = normalizeCollection<any>(caseStudiesData?.data)
       .map(study => ({
         ...study,
+        description: study.description || '',
         backgroundImage: transformMedia(study.backgroundImage),
         bulletPoints: Array.isArray(study.bulletPoints) ? study.bulletPoints : [],
       }))
@@ -144,13 +149,53 @@ async function getPageData() {
         }
       : null
 
+    // About Us Section (Who We Are + Core Values)
+    const aboutUsEntity = normalizeEntity<any>(aboutUsData?.data)
+    const aboutUs = aboutUsEntity
+      ? {
+          whoWeAreHeading: aboutUsEntity.whoWeAreHeading || 'Who We Are',
+          whoWeAreDescription: aboutUsEntity.whoWeAreDescription || '',
+          coreValuesHeading: aboutUsEntity.coreValuesHeading || 'Our Core Values',
+          coreValues: (aboutUsEntity.coreValues ?? []).map((item: any) => {
+            const node = item?.attributes ?? item
+            return {
+              title: node.title,
+              description: node.description,
+              icon: node.icon,
+            }
+          }),
+        }
+      : null
+
+    const featuresSectionEntity = normalizeEntity<any>(featuresSectionData?.data);
+    const scrollMorphHeroData = featuresSectionEntity ? {
+        introHeading: featuresSectionEntity.introHeading,
+        introSubheading: featuresSectionEntity.introSubheading,
+        sectionTitle: featuresSectionEntity.sectionTitle,
+        sectionDescription: featuresSectionEntity.sectionDescription,
+        images: (Array.isArray(featuresSectionEntity.images) ? featuresSectionEntity.images : Array.isArray(featuresSectionEntity.images?.data) ? featuresSectionEntity.images.data : []).map((img: any) => ({
+            url: getStrapiMedia(img.attributes?.url || img.url)
+        }))
+    } : null;
+
+    const caseStudiesSectionEntity = normalizeEntity<any>(caseStudiesSectionData?.data);
+    const caseStudiesSection = caseStudiesSectionEntity ? {
+        title: caseStudiesSectionEntity.title || 'Case Studies',
+        description: caseStudiesSectionEntity.description || ''
+    } : null;
+
+    console.log('Case Studies Section:', caseStudiesSection);
+    console.log('Case Studies Count:', caseStudiesData?.data?.length || 0);
+
     return {
       hero,
       services,
       products,
-      features,
-      whyChooseUs,
+      sphereShowcase,
       metrics,
+      aboutUs,
+      scrollMorphHeroData,
+      caseStudiesSection,
       caseStudies,
       testimonials,
       blogPosts,
@@ -248,54 +293,35 @@ export default async function Home() {
       
       {data.hero && <HeroSection data={data.hero} />}
       
-      {data.metrics && data.metrics.length > 0 && (
-        <MetricsCounter metrics={data.metrics} />
+      {/* Enhanced Metrics Section (Who We Are + Core Values + Metrics) */}
+      {data.aboutUs && data.metrics && data.metrics.length > 0 && (
+        <MetricsCounter 
+          metrics={data.metrics}
+          metricsSection={data.aboutUs}
+        />
       )}
       
-      {/* Core Services – sticky heading only */}
-      {data.services && (
-        <ServicesGrid services={data.services} />
+      {/* Core Services replaced with ExpandOnHover interactive cards using backend data */}
+
+      {data.services && data.services.length > 0 && (
+        <CoreServicesSection services={data.services} />
       )}
       
       {data.products && data.products.length > 0 && (
         <ProductCarousel products={data.products} />
       )}
       
-      {data.whyChooseUs && data.whyChooseUs.items && data.whyChooseUs.items.length > 0 ? (
-        <WhyChooseUsSection
-          sectionTitle={data.whyChooseUs.sectionTitle}
-          sectionDescription={data.whyChooseUs.sectionDescription}
-          items={data.whyChooseUs.items}
-        />
-      ) : (
-        <section id="why-choose-us" className="py-20 bg-white">
-          <div className="container mx-auto px-6">
-            <div className="text-center">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Why Choose Us
-              </h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
-                Content not yet published. Please add content in Strapi admin at Settings → Why Choose Us
-              </p>
-              <div className="bg-gray-100 p-8 rounded-lg max-w-2xl mx-auto">
-                <p className="text-sm text-gray-600">
-                  To display this section:
-                </p>
-                <ol className="text-left mt-4 space-y-2 text-sm text-gray-700">
-                  <li>1. Go to Strapi Admin → Content Manager → Why Choose Us</li>
-                  <li>2. Fill in Section Title and Description</li>
-                  <li>3. Add items with images, titles, and descriptions</li>
-                  <li>4. Click Publish</li>
-                  <li>5. Go to Settings → Roles → Public → Enable 'find' for Why-choose-us</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        </section>
+      <ScrollMorphHero data={data.scrollMorphHeroData || undefined} />
+      
+      {data.sphereShowcase && data.sphereShowcase.items && data.sphereShowcase.items.length > 0 && (
+        <ImageSphereSection data={data.sphereShowcase} />
       )}
       
       {data.caseStudies && data.caseStudies.length > 0 && (
-        <CaseStudiesScroll caseStudies={data.caseStudies} />
+        <CaseStudiesScroll 
+          caseStudies={data.caseStudies} 
+          sectionData={data.caseStudiesSection || { title: 'Case Studies', description: '' }} 
+        />
       )}
       
       {data.testimonials && data.testimonials.length > 0 && (() => {

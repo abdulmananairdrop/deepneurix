@@ -1,10 +1,11 @@
 {
   "kind": "singleType",
-  "collectionName": "why_choose_us",
+  "collectionName": "sphere_showcases",
   "info": {
-    "singularName": "why-choose-us",
-    "pluralName": "why-choose-uses",
-    "displayName": "Why Choose Us"
+    "singularName": "sphere-showcase",
+    "pluralName": "sphere-showcases",
+    "displayName": "Sphere Showcase",
+    "description": "Configuration for the interactive 3D sphere"
   },
   "options": {
     "draftAndPublish": true
@@ -14,7 +15,7 @@
     "sectionTitle": {
       "type": "string",
       "required": true,
-      "default": "Why Choose Us"
+      "default": "Explore Our Features"
     },
     "sectionDescription": {
       "type": "richtext"
@@ -22,7 +23,7 @@
     "items": {
       "type": "component",
       "repeatable": true,
-      "component": "why-choose-us.item"
+      "component": "sphere-showcase.item"
     }
   }
 }

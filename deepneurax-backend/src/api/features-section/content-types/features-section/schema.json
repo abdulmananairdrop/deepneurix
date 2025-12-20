@@ -1,0 +1,39 @@
+{
+  "kind": "singleType",
+  "collectionName": "features_sections",
+  "info": {
+    "singularName": "features-section",
+    "pluralName": "features-sections",
+    "displayName": "Intro Animation Section",
+    "description": "Configuration for the scroll morph animation section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "introHeading": {
+      "type": "string",
+      "default": "The future is built on AI."
+    },
+    "introSubheading": {
+      "type": "string",
+      "default": "SCROLL TO EXPLORE"
+    },
+    "sectionTitle": {
+      "type": "string",
+      "default": "Explore Our Vision"
+    },
+    "sectionDescription": {
+      "type": "text",
+      "default": "Discover a world where technology meets creativity. Scroll through our curated collection of innovations designed to shape the future."
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

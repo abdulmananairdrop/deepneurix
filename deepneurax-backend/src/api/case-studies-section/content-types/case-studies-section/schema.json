@@ -1,0 +1,25 @@
+{
+  "kind": "singleType",
+  "collectionName": "case_studies_sections",
+  "info": {
+    "singularName": "case-studies-section",
+    "pluralName": "case-studies-sections",
+    "displayName": "Case Studies Section",
+    "description": "Metadata for the case studies section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "default": "Case Studies"
+    },
+    "description": {
+      "type": "text",
+      "default": "Discover how we help our clients transform their businesses with cutting-edge AI solutions and strategic innovation."
+    }
+  }
+}

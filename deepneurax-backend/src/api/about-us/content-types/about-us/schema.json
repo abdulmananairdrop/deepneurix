@@ -1,0 +1,34 @@
+{
+  "kind": "singleType",
+  "collectionName": "about_us_sections",
+  "info": {
+    "singularName": "about-us",
+    "pluralName": "about-us-sections",
+    "displayName": "About Us Section",
+    "description": "Section containing Who We Are, Core Values, and Metrics"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "whoWeAreHeading": {
+      "type": "string",
+      "default": "Who We Are"
+    },
+    "whoWeAreDescription": {
+      "type": "text"
+    },
+    "coreValuesHeading": {
+      "type": "string",
+      "default": "Our Core Values"
+    },
+    "coreValues": {
+      "type": "component",
+      "repeatable": true,
+      "min": 4,
+      "max": 4,
+      "component": "about-us.core-value"
+    }
+  }
+}

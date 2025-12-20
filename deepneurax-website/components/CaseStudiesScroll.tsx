@@ -1,31 +1,42 @@
 'use client'
 
-import { useRef, useState, useMemo, useEffect } from 'react'
+import { useRef, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ArrowUpRight, CheckCircle2 } from 'lucide-react'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
-type CaseStudyBullet = string | { text?: string | null }
-
 interface CaseStudy {
   id: number
   title: string
-  bulletPoints?: CaseStudyBullet[]
+  description?: string
+  bulletPoints?: (string | { text?: string | null })[]
   backgroundImage?: {
-    asset?: {
-      url: string
-    }
+    asset?: { url: string }
     url?: string
   } | null
+  link?: string
 }
 
-export default function CaseStudiesScroll({ caseStudies }: { caseStudies: CaseStudy[] }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [activeIndex, setActiveIndex] = useState(0)
+interface SectionData {
+  title: string
+  description: string
+}
+
+export default function CaseStudiesScroll({ 
+  caseStudies, 
+  sectionData 
+}: { 
+  caseStudies: CaseStudy[], 
+  sectionData: SectionData 
+}) {
+  const mainContainerRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const descriptionRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -34,17 +45,12 @@ export default function CaseStudiesScroll({ caseStudies }: { caseStudies: CaseSt
 
   const normalized = useMemo(() => {
     return caseStudies.map(study => {
-      // Extract URL from various possible structures
       let bgUrl = ''
       const bg = study.backgroundImage
       if (bg) {
-        if (typeof bg === 'string') {
-          bgUrl = bg
-        } else if (bg.asset?.url) {
-          bgUrl = bg.asset.url
-        } else if (bg.url) {
-          bgUrl = bg.url
-        }
+        if (typeof bg === 'string') bgUrl = bg
+        else if (bg.asset?.url) bgUrl = bg.asset.url
+        else if (bg.url) bgUrl = bg.url
       }
       
       return {
@@ -52,7 +58,7 @@ export default function CaseStudiesScroll({ caseStudies }: { caseStudies: CaseSt
         bulletPoints: Array.isArray(study.bulletPoints)
           ? study.bulletPoints
               .map(bp => (typeof bp === 'string' ? bp : bp?.text || ''))
-              .filter((text): text is string => Boolean(text))
+              .filter(Boolean) as string[]
           : [],
         backgroundUrl: bgUrl,
       }
@@ -60,133 +66,214 @@ export default function CaseStudiesScroll({ caseStudies }: { caseStudies: CaseSt
   }, [caseStudies])
 
   useEffect(() => {
-    if (!mounted || !normalized.length || !containerRef.current) return
+    if (!mounted || !mainContainerRef.current || !titleRef.current || !descriptionRef.current) return
 
     const ctx = gsap.context(() => {
-      const timeline = gsap.timeline({
+      const cards = gsap.utils.toArray<HTMLElement>('.cs-card-stack')
+      
+      // Initial States
+      gsap.set(titleRef.current, {
+        fontSize: '12vw',
+        position: 'fixed',
+        left: '50%',
+        top: '50%',
+        xPercent: -50,
+        yPercent: -50,
+        textAlign: 'center',
+        width: '100vw',
+        zIndex: 100,
+        opacity: 1
+      })
+
+      gsap.set(descriptionRef.current, {
+        opacity: 0,
+        y: 30,
+        position: 'fixed',
+        left: '10%',
+        top: '40%',
+        width: '35vw',
+        zIndex: 90
+      })
+
+      gsap.set(cards, {
+        opacity: 0,
+        x: 100,
+        scale: 0.9,
+        filter: 'blur(10px)',
+        pointerEvents: 'none'
+      })
+
+      // Master Timeline
+      const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: mainContainerRef.current,
           start: 'top top',
-          end: `+=${normalized.length * 1500}`,
+          end: `+=${(normalized.length + 1) * 100}%`,
           scrub: 1,
           pin: true,
-        },
-      })
-
-      normalized.forEach((study, index) => {
-        const isFirst = index === 0
-        const nextExists = index < normalized.length - 1
-
-        if (!isFirst) {
-          timeline.to(`.cs-bg-${index}`, { opacity: 1, duration: 0.5 })
-          timeline.to(`.cs-content-${index}`, { opacity: 1, y: 0, duration: 0.5 }, '<')
-        }
-
-        timeline.call(() => setActiveIndex(index))
-
-        study.bulletPoints.forEach((_, bulletIndex) => {
-          timeline.to(`.cs-bullet-${index}-${bulletIndex}`, { opacity: 1, y: 0, duration: 0.3 })
-          timeline.to(`.cs-progress-${index}-${bulletIndex}`, { scaleX: 1, duration: 0.5 })
-        })
-
-        if (nextExists) {
-          timeline.to(`.cs-content-${index}`, { opacity: 0, y: -30, duration: 0.5 })
-          timeline.to(`.cs-bg-${index}`, { opacity: 0, duration: 0.5 }, '<0.2')
+          anticipatePin: 1,
+          invalidateOnRefresh: true
         }
       })
-    }, containerRef)
 
-    return () => ctx.revert()
+      // 1. Title Move: Center -> Left
+      tl.to(titleRef.current, {
+        fontSize: '3.5rem',
+        left: '10%',
+        top: '20%',
+        xPercent: 0,
+        yPercent: 0,
+        textAlign: 'left',
+        width: '35vw',
+        duration: 2,
+        ease: 'power2.inOut'
+      })
+
+      // 2. Description Fade In
+      tl.to(descriptionRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 1
+      }, '-=0.5')
+
+      // 3. Cards Sequential Display
+      cards.forEach((card, i) => {
+        const cardTl = gsap.timeline()
+        
+        if (i > 0) {
+          // Fade out previous
+          cardTl.to(cards[i-1], {
+            opacity: 0,
+            x: -50,
+            scale: 0.95,
+            filter: 'blur(10px)',
+            duration: 1,
+            pointerEvents: 'none'
+          })
+        }
+
+        // Fade in current
+        cardTl.to(card, {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          filter: 'blur(0px)',
+          duration: 1,
+          pointerEvents: 'auto'
+        }, i === 0 ? '-=0.5' : '<')
+
+        // Hold frame
+        cardTl.to({}, { duration: 1.5 })
+
+        tl.add(cardTl)
+      })
+
+    }, mainContainerRef)
+
+    return () => {
+      ctx.revert()
+      ScrollTrigger.getAll().forEach(st => st.kill())
+    }
   }, [mounted, normalized])
 
-  if (!caseStudies.length) {
-    return null
-  }
+  if (!normalized.length) return null
 
   return (
-    <section
-      ref={containerRef}
-      id="case-studies"
-      className="relative w-full h-screen overflow-hidden bg-gray-900 text-white"
+    <section 
+      ref={mainContainerRef} 
+      className="relative w-full h-screen bg-[#050b1f] text-white overflow-hidden"
     >
-      {/* Background Images */}
-      {normalized.map((study, index) => (
-        <div
-          key={`bg-${study.id || index}`}
-          className={`cs-bg-${index} absolute inset-0 w-full h-full`}
-          style={{ opacity: index === 0 ? 1 : 0 }}
-        >
-          {study.backgroundUrl ? (
-            <Image
-              src={study.backgroundUrl}
-              alt={study.title}
-              fill
-              sizes="100vw"
-              priority={index === 0}
-              className="object-cover"
-              unoptimized
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-gray-900 to-purple-900" />
-          )}
-          {/* Dark overlay */}
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-      ))}
-
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center justify-center">
-        {normalized.map((study, index) => (
-          <div
-            key={`content-${study.id || index}`}
-            className={`cs-content-${index} absolute inset-0 flex flex-col items-center justify-center px-6 text-center`}
-            style={{ 
-              opacity: index === 0 ? 1 : 0,
-              transform: index === 0 ? 'translateY(0)' : 'translateY(40px)'
-            }}
+      <div className="container mx-auto px-10 h-full flex relative">
+        
+        {/* TEXT CONTENT (STICKY VIA GSAP FIXED) */}
+        <div className="w-[45%] h-full relative z-[100] pointer-events-none">
+          <h2 
+            ref={titleRef}
+            className="font-black tracking-tighter leading-none uppercase pointer-events-auto"
+            style={{ fontFamily: "'Geom', sans-serif" }}
           >
-            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-8 max-w-4xl">
-              {study.title}
-            </h2>
-
-            <div className="w-full max-w-2xl space-y-6">
-              {study.bulletPoints.length > 0 ? (
-                study.bulletPoints.map((point, bulletIndex) => (
-                  <div
-                    key={bulletIndex}
-                    className={`cs-bullet-${index}-${bulletIndex}`}
-                    style={{ opacity: 0, transform: 'translateY(20px)' }}
-                  >
-                    <p className="text-lg md:text-xl font-light mb-2">
-                      {point}
-                    </p>
-                    <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
-                      <div
-                        className={`cs-progress-${index}-${bulletIndex} h-full bg-blue-500 origin-left`}
-                        style={{ transform: 'scaleX(0)' }}
-                      />
-                    </div>
-                  </div>
-                ))
-              ) : null}
+            {sectionData.title}
+          </h2>
+          
+          <div ref={descriptionRef} className="pointer-events-auto">
+            <p className="text-blue-100/60 text-xl leading-relaxed">
+              {sectionData.description}
+            </p>
+            <div className="mt-8 flex gap-2">
+               <div className="w-12 h-1 bg-blue-600 rounded-full"></div>
+               <div className="w-4 h-1 bg-blue-600/30 rounded-full"></div>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* CARDS AREA */}
+        <div className="w-[55%] h-full relative flex items-center justify-center z-10">
+          {normalized.map((study, index) => (
+            <div 
+              key={study.id} 
+              className="cs-card-stack absolute inset-0 flex items-center justify-center p-10"
+            >
+              <div className="w-full max-w-2xl bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                {/* Image Section */}
+                <div className="relative h-[280px] w-full">
+                  {study.backgroundUrl ? (
+                    <Image
+                      src={study.backgroundUrl}
+                      alt={study.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050b1f] via-transparent to-transparent" />
+                  
+                  <div className="absolute top-6 left-6 px-4 py-1.5 bg-blue-600/80 backdrop-blur-md text-white text-[10px] font-black tracking-widest rounded-full uppercase">
+                    Case Study {String(index + 1).padStart(2, '0')}
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-10">
+                  <h3 className="text-3xl font-black text-white mb-4" style={{ fontFamily: "'Geom', sans-serif" }}>
+                    {study.title}
+                  </h3>
+
+                  {study.description && (
+                    <p className="text-blue-100/70 text-sm mb-6 line-clamp-2 leading-relaxed">
+                      {study.description}
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+                    {study.bulletPoints.map((point, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-blue-100/80 text-xs font-medium">{point}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {study.link && (
+                    <a 
+                      href={study.link}
+                      className="group/btn relative inline-flex items-center gap-3 px-8 py-3.5 bg-white text-blue-950 font-black text-xs rounded-xl overflow-hidden transition-all"
+                    >
+                      <span className="relative z-10 uppercase tracking-wider">Explore Details</span>
+                      <ArrowUpRight className="relative z-10 w-4 h-4 transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
+                      <div className="absolute inset-0 bg-blue-50 transform translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Timeline indicator */}
-      <div className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 hidden sm:block">
-        <ul className="flex flex-col gap-4">
-          {normalized.map((_, index) => (
-            <li key={index} className="flex items-center gap-2">
-              <span className={`text-xs font-mono ${index === activeIndex ? 'text-white' : 'text-white/40'}`}>
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <span className={`w-2 h-2 rounded-full ${index === activeIndex ? 'bg-blue-500' : 'bg-white/30'}`} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      {/* Atmospheric Effects */}
+      <div className="absolute top-0 right-0 w-[60vw] h-[60vw] bg-blue-600/[0.03] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] bg-indigo-600/[0.03] rounded-full blur-[120px] pointer-events-none" />
     </section>
   )
 }
