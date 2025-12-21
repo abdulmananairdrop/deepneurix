@@ -1,4 +1,5 @@
-import { fetchAPI, getStrapiMedia } from '@/lib/strapi/client'
+import { fetchAPI } from '@/lib/strapi/client'
+import { normalizeEntity, normalizeCollection, transformMedia } from '@/lib/strapi/utils'
 import ReactMarkdown from 'react-markdown'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -29,19 +30,18 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
       pagination: { limit: 1 }
     })
 
-    if (!response?.data?.[0]) {
-      return null
-    }
+    const postEntity = response?.data?.[0]
+    if (!postEntity) return null
 
-    const post = response.data[0]
+    const post = normalizeEntity<any>(postEntity)
+    if (!post) return null
+
     return {
       title: post.title,
       slug: post.slug,
       publishedAt: post.publishedAt,
       excerpt: post.excerpt,
-      coverImage: post.coverImage ? {
-        asset: { url: getStrapiMedia(post.coverImage.url) || '' }
-      } : undefined,
+      coverImage: transformMedia(post.coverImage) || undefined,
       tags: post.tags,
       content: post.content,
       author: post.author
@@ -52,20 +52,28 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
   }
 }
 
-async function getFooterData() {
+async function getLayoutData() {
   try {
     const [footerData, servicesData, productsData] = await Promise.all([
-      fetchAPI('/footers', { populate: '*', pagination: { limit: 1 } }),
+      fetchAPI('/footer', { populate: '*' }),
       fetchAPI('/services', { sort: 'order:asc' }),
       fetchAPI('/products', { sort: 'order:asc' })
     ])
 
+    const footerEntity = normalizeEntity<any>(footerData?.data)
+    const footer = footerEntity ? {
+      ...footerEntity,
+      siteLogo: transformMedia(footerEntity.siteLogo),
+      siteLogoLight: transformMedia(footerEntity.siteLogoLight),
+    } : null
+
     return {
-      footer: footerData?.data?.[0] || null,
-      services: servicesData?.data || [],
-      products: productsData?.data || []
+      footer,
+      services: normalizeCollection<any>(servicesData),
+      products: normalizeCollection<any>(productsData)
     }
   } catch (error) {
+    console.error('Error fetching layout data:', error)
     return { footer: null, services: [], products: [] }
   }
 }
@@ -76,12 +84,16 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const post = await getBlogPost(slug)
-  const { footer, services, products } = await getFooterData()
+  const [post, layoutData] = await Promise.all([
+    getBlogPost(slug),
+    getLayoutData()
+  ])
 
   if (!post) {
     notFound()
   }
+
+  const { footer, services, products } = layoutData
 
   const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -91,7 +103,11 @@ export default async function BlogPostPage({
 
   return (
     <div className="bg-white min-h-screen">
-      <Header />
+      <Header 
+        logo={footer?.siteLogo}
+        logoLight={footer?.siteLogoLight}
+        siteName={footer?.siteName}
+      />
 
       {/* Hero Section with Cover Image */}
       <section className="pt-32 pb-16 bg-gradient-to-r from-blue-50 to-cyan-50">
@@ -136,6 +152,7 @@ export default async function BlogPostPage({
           </div>
         </div>
       </section>
+
 
       {/* Cover Image */}
       {post.coverImage?.asset?.url && (
@@ -244,7 +261,7 @@ export default async function BlogPostPage({
       </section>
 
       {footer && (
-        <Footer data={footer} services={services} products={products} />
+        <Footer data={footer} services={services} />
       )}
     </div>
   )
@@ -254,7 +271,7 @@ export default async function BlogPostPage({
 export async function generateStaticParams() {
   try {
     const response = await fetchAPI('/blog-posts', { fields: ['slug'] })
-    const posts = response?.data || []
+    const posts = normalizeCollection<any>(response)
 
     return posts.map((post: { slug: string }) => ({
       slug: post.slug,

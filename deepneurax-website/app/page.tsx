@@ -1,5 +1,6 @@
 import ImageSphereSection from './ImageSphereSection';
-import { fetchAPI, getStrapiMedia } from '@/lib/strapi/client';
+import { fetchAPI } from '@/lib/strapi/client';
+import { normalizeEntity, normalizeCollection, transformMedia } from '@/lib/strapi/utils';
 import BlogGrid from '@/components/BlogGrid';
 import CaseStudiesScroll from '@/components/CaseStudiesScroll';
 import CoreServicesSection from '@/components/CoreServicesSection';
@@ -11,23 +12,6 @@ import MetricsCounter from '@/components/MetricsCounter';
 import ProductCarousel from '@/components/ProductCarousel';
 import ScrollMorphHero from '@/components/ui/scroll-morph-hero';
 import { TestimonialsSection } from '@/components/blocks/testimonials-with-marquee';
-
-const transformMedia = (media: any) => {
-  const dataNode = Array.isArray(media?.data) ? media.data[0] : media?.data ?? media
-  const url = dataNode?.attributes?.url ?? dataNode?.url
-  return url ? { asset: { url: getStrapiMedia(url) } } : null
-}
-
-const normalizeEntity = <T,>(entity: any): T | null => {
-  if (!entity) return null
-  const attributes = entity.attributes ?? entity
-  return { id: entity.id, ...attributes } as T
-}
-
-const normalizeCollection = <T,>(collection: any[] | undefined) =>
-  (collection ?? [])
-    .map(item => normalizeEntity<T>(item))
-    .filter(Boolean) as T[]
 
 async function getPageData() {
   try {
@@ -70,10 +54,9 @@ async function getPageData() {
           ...heroEntity,
           backgroundImage: transformMedia(heroEntity.backgroundImage),
           backgroundVideos: (heroEntity.backgroundVideos ?? []).map((video: any) => {
-            const videoNode = video?.attributes ?? video
-            const videoAsset = transformMedia(videoNode?.video)
+            const videoNode = normalizeEntity<any>(video)
             return {
-              video: videoAsset?.asset?.url ? { url: videoAsset.asset.url } : null,
+              video: transformMedia(videoNode?.video)?.asset?.url || null,
               videoUrl: videoNode?.videoUrl,
               thumbnail: transformMedia(videoNode?.thumbnail),
               duration: videoNode?.duration || 10,
@@ -82,12 +65,12 @@ async function getPageData() {
         }
       : null
 
-    const services = normalizeCollection<any>(servicesData?.data).map(service => ({
+    const services = normalizeCollection<any>(servicesData).map(service => ({
       ...service,
       image: transformMedia(service.image),
     }))
 
-    const products = normalizeCollection<any>(productsData?.data).map(product => ({
+    const products = normalizeCollection<any>(productsData).map(product => ({
       ...product,
       image: transformMedia(product.image),
     }))
@@ -101,24 +84,23 @@ async function getPageData() {
             'We deliver exceptional results through innovation, expertise, and dedication',
           items: (sphereShowcaseEntity.items ?? [])
             .map((item: any) => {
-              const node = item?.attributes ?? item
-              const image = transformMedia(node.image)
+              const node = normalizeEntity<any>(item)
               return {
-                id: item.id,
-                image: image?.asset?.url,
-                link: node.link || '#',
-                title: node.title,
-                description: node.description,
-                order: node.order || 0,
+                id: item.id || node?.id,
+                image: transformMedia(node?.image)?.asset?.url,
+                link: node?.link || '#',
+                title: node?.title,
+                description: node?.description,
+                order: node?.order || 0,
               }
             })
             .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)),
         }
       : null
 
-    const metrics = normalizeCollection<any>(metricsData?.data)
+    const metrics = normalizeCollection<any>(metricsData)
 
-    const caseStudies = normalizeCollection<any>(caseStudiesData?.data)
+    const caseStudies = normalizeCollection<any>(caseStudiesData)
       .map(study => ({
         ...study,
         description: study.description || '',
@@ -128,12 +110,12 @@ async function getPageData() {
       .filter((study: any) => study.isActive !== false)
       .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
 
-    const testimonials = normalizeCollection<any>(testimonialsData?.data).map(testimonial => ({
+    const testimonials = normalizeCollection<any>(testimonialsData).map(testimonial => ({
       ...testimonial,
       avatar: transformMedia(testimonial.avatar),
     }))
 
-    const blogPosts = normalizeCollection<any>(blogPostsData?.data).map(post => ({
+    const blogPosts = normalizeCollection<any>(blogPostsData).map(post => ({
       ...post,
       coverImage: transformMedia(post.coverImage),
     }))
@@ -157,11 +139,11 @@ async function getPageData() {
           whoWeAreDescription: aboutUsEntity.whoWeAreDescription || '',
           coreValuesHeading: aboutUsEntity.coreValuesHeading || 'Our Core Values',
           coreValues: (aboutUsEntity.coreValues ?? []).map((item: any) => {
-            const node = item?.attributes ?? item
+            const node = normalizeEntity<any>(item)
             return {
-              title: node.title,
-              description: node.description,
-              icon: node.icon,
+              title: node?.title,
+              description: node?.description,
+              icon: node?.icon,
             }
           }),
         }
@@ -173,9 +155,9 @@ async function getPageData() {
         introSubheading: featuresSectionEntity.introSubheading,
         sectionTitle: featuresSectionEntity.sectionTitle,
         sectionDescription: featuresSectionEntity.sectionDescription,
-        images: (Array.isArray(featuresSectionEntity.images) ? featuresSectionEntity.images : Array.isArray(featuresSectionEntity.images?.data) ? featuresSectionEntity.images.data : []).map((img: any) => ({
-            url: getStrapiMedia(img.attributes?.url || img.url)
-        }))
+        images: normalizeCollection<any>(featuresSectionEntity.images).map((img: any) => ({
+            url: transformMedia(img)?.asset?.url
+        })).filter(img => img.url)
     } : null;
 
     const caseStudiesSectionEntity = normalizeEntity<any>(caseStudiesSectionData?.data);
@@ -183,9 +165,6 @@ async function getPageData() {
         title: caseStudiesSectionEntity.title || 'Case Studies',
         description: caseStudiesSectionEntity.description || ''
     } : null;
-
-    console.log('Case Studies Section:', caseStudiesSection);
-    console.log('Case Studies Count:', caseStudiesData?.data?.length || 0);
 
     return {
       hero,
@@ -361,7 +340,6 @@ export default async function Home() {
         <Footer 
           data={data.footer} 
           services={data.services || []} 
-          products={data.products || []} 
         />
       )}
     </div>

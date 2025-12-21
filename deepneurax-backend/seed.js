@@ -261,6 +261,18 @@ const seedData = {
     }
   ],
 
+  aboutUs: {
+    whoWeAreHeading: 'Empowering the Future Through AI',
+    whoWeAreDescription: 'At DeepNeurax, we believe that artificial intelligence is the key to unlocking human potential. Our team of experts is dedicated to building intelligent systems that solve real-world problems and drive meaningful progress.',
+    coreValuesHeading: 'Our Core Values',
+    coreValues: [
+      { title: 'Innovation', description: 'Pushing the boundaries of what is possible with AI.', icon: '💡' },
+      { title: 'Integrity', description: 'Building trust through transparency and ethical AI practices.', icon: '🛡️' },
+      { title: 'Excellence', description: 'Delivering high-quality solutions that exceed expectations.', icon: '⭐' },
+      { title: 'Collaboration', description: 'Working together with our clients to achieve shared goals.', icon: '🤝' }
+    ]
+  },
+
   blogPosts: [
     {
       title: 'The Future of AI in Business',
@@ -302,14 +314,32 @@ const seedData = {
     companyDescription: 'DeepNeurax is a leading AI solutions provider, empowering businesses with cutting-edge artificial intelligence and machine learning technologies.',
     socialLinks: [
       { platform: 'LinkedIn', url: 'https://linkedin.com/company/deepneurax' },
-      { platform: 'Twitter', url: 'https://twitter.com/deepneurax' },
+      { platform: 'X', url: 'https://x.com/deepneurax' },
       { platform: 'GitHub', url: 'https://github.com/deepneurax' },
-      { platform: 'Facebook', url: 'https://facebook.com/deepneurax' }
+      { platform: 'Instagram', url: 'https://instagram.com/deepneurax' }
     ],
     contactEmail: 'info@deepneurax.com',
     contactPhone: '+1 (555) 123-4567',
     address: '123 AI Street, Tech Valley, CA 94000, USA',
     copyrightText: '© 2025 DeepNeurax Technologies. All rights reserved.'
+  },
+
+  featuresSection: {
+    introHeading: 'The future is built on AI.',
+    introSubheading: 'SCROLL TO EXPLORE',
+    sectionTitle: 'Explore Our Vision',
+    sectionDescription: 'Discover a world where technology meets creativity. Scroll through our curated collection of innovations designed to shape the future.'
+  },
+
+  sphereShowcase: {
+    sectionTitle: 'Interactive Innovation',
+    sectionDescription: 'Explore our ecosystem of AI-powered solutions through this interactive experience.',
+    items: [
+      { title: 'Neural Networks', description: 'Advanced neural architectures.', link: '/tech/neural', order: 1 },
+      { title: 'Edge Computing', description: 'AI at the edge.', link: '/tech/edge', order: 2 },
+      { title: 'Natural Language', description: 'Understanding human speech.', link: '/tech/nlp', order: 3 },
+      { title: 'Cloud Platform', description: 'Scalable AI in the cloud.', link: '/tech/cloud', order: 4 }
+    ]
   }
 };
 
@@ -363,6 +393,11 @@ async function seedContent() {
     }
     console.log(`✅ ${seedData.metrics.length} Metrics created\n`);
 
+    // Seed About Us (Single Type)
+    console.log('📝 Creating About Us...');
+    await api.put('/about-us', { data: seedData.aboutUs });
+    console.log('✅ About Us created\n');
+
     // Seed Case Studies
     console.log('📝 Creating Case Studies...');
     for (const caseStudy of seedData.caseStudies) {
@@ -393,6 +428,16 @@ async function seedContent() {
     console.log('📝 Creating Footer...');
     await api.put('/footer', { data: seedData.footer });
     console.log('✅ Footer created\n');
+
+    // Seed Features Section (Single Type)
+    console.log('📝 Creating Features Section...');
+    await api.put('/features-section', { data: seedData.featuresSection });
+    console.log('✅ Features Section created\n');
+
+    // Seed Sphere Showcase (Single Type)
+    console.log('📝 Creating Sphere Showcase...');
+    await api.put('/sphere-showcase', { data: seedData.sphereShowcase });
+    console.log('✅ Sphere Showcase created\n');
 
     console.log('🎉 All content seeded successfully!');
     console.log('\n📌 Next steps:');

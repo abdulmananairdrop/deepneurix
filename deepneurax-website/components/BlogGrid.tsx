@@ -13,9 +13,7 @@ if (typeof window !== 'undefined') {
 
 interface BlogPost {
   title: string
-  slug: {
-    current: string
-  }
+  slug: string | { current: string }
   publishedAt: string
   excerpt: string
   coverImage?: {
@@ -81,7 +79,8 @@ export default function BlogGrid({ posts }: { posts: BlogPost[] }) {
 
         <div className="blog-grid grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post, index) => {
-            const key = post.slug?.current ?? String(post.slug ?? post.title ?? index)
+            const slug = typeof post.slug === 'string' ? post.slug : post.slug?.current
+            const key = slug ?? String(post.title ?? index)
             return (
             <article
               key={key}
@@ -128,25 +127,27 @@ export default function BlogGrid({ posts }: { posts: BlogPost[] }) {
                   {post.excerpt}
                 </p>
 
-                <Link
-                  href={`/blog/${post.slug.current}`}
-                  className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors duration-300 font-semibold"
-                >
-                  Read More
-                  <svg
-                    className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {slug && (
+                  <Link
+                    href={`/blog/${slug}`}
+                    className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors duration-300 font-semibold"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
+                    Read More
+                    <svg
+                      className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </Link>
+                )}
               </div>
             </article>
             )

@@ -6,6 +6,8 @@ import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+import { Github, Linkedin, Twitter, Instagram, Globe } from 'lucide-react'
+
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
@@ -29,11 +31,28 @@ interface FooterData {
 interface FooterProps {
   data: FooterData
   services: Array<{ title: string; link?: string }>
-  products: Array<{ name: string; link?: string }>
 }
 
-export default function Footer({ data, services, products }: FooterProps) {
+export default function Footer({ data, services }: FooterProps) {
   const footerRef = useRef<HTMLElement>(null)
+
+  const menuItems = [
+    { label: 'Home', href: '/' },
+    { label: 'Services', href: '/#services' },
+    { label: 'Case Studies', href: '/#case-studies' },
+    { label: 'Blog', href: '/#blog' },
+    { label: 'About Us', href: '/#about' },
+    { label: 'Contact', href: '/contact' },
+  ]
+
+  const getSocialIcon = (platform: string) => {
+    const p = platform.toLowerCase()
+    if (p.includes('linkedin')) return <Linkedin size={20} />
+    if (p.includes('twitter') || p.includes('x')) return <Twitter size={20} />
+    if (p.includes('github')) return <Github size={20} />
+    if (p.includes('instagram')) return <Instagram size={20} />
+    return <Globe size={20} />
+  }
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -98,10 +117,10 @@ export default function Footer({ data, services, products }: FooterProps) {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-white/10 hover:bg-blue-600 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    className="w-10 h-10 rounded-full bg-white/10 hover:bg-blue-600 flex items-center justify-center transition-all duration-300 hover:scale-110 text-white"
                     aria-label={social.platform}
                   >
-                    {social.icon || '🔗'}
+                    {getSocialIcon(social.platform)}
                   </a>
                 ))}
               </div>
@@ -129,22 +148,18 @@ export default function Footer({ data, services, products }: FooterProps) {
             </ul>
           </div>
 
-          {/* Products */}
+          {/* Quick Links (Pages) */}
           <div className="footer-col">
-            <h3 className="text-white font-bold text-lg mb-4">Products</h3>
+            <h3 className="text-white font-bold text-lg mb-4">Pages</h3>
             <ul className="space-y-2">
-              {products.slice(0, 6).map((product, index) => (
+              {menuItems.map((item, index) => (
                 <li key={index}>
-                  {product.link ? (
-                    <Link
-                      href={product.link}
-                      className="text-white/70 hover:text-blue-400 transition-colors duration-300"
-                    >
-                      {product.name}
-                    </Link>
-                  ) : (
-                    <span className="text-white/70">{product.name}</span>
-                  )}
+                  <Link
+                    href={item.href}
+                    className="text-white/70 hover:text-blue-400 transition-colors duration-300"
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -188,10 +203,24 @@ export default function Footer({ data, services, products }: FooterProps) {
 
         {/* Bottom Bar */}
         <div className="footer-bottom border-t border-white/10 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-white/60 text-sm">
-              {data.copyrightText}
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <p className="text-white/60 text-sm">
+                {data.copyrightText}
+              </p>
+              <p className="text-white/40 text-xs flex items-center gap-1 group/dev">
+                Developed by 
+                <a 
+                  href="https://github.com/abdulmanan69" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 transition-colors font-medium flex items-center gap-1"
+                >
+                  abdulmanan69
+                  <span className="inline-block transform group-hover/dev:translate-x-1 group-hover/dev:-translate-y-1 transition-transform duration-300">↗</span>
+                </a>
+              </p>
+            </div>
             <div className="flex gap-6">
               <Link
                 href="/privacy"
